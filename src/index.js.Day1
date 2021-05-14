@@ -1,0 +1,166 @@
+
+//////////////////////////////////////////////////////////////////////////////
+// ALL FUNCTIONS ARE DECLARED HERE ///////////////////////////////////////////////
+
+// DISPLAY THE MAIN PAGE
+function displayMainPage(){
+    displayHeader()
+    displayMain()
+}
+
+function displayHeader(){
+    // FIND THE ROOT CONTAINER DIV
+    let rootContainer = document.querySelector("#root")
+ 
+    // CREATE MAIN HEADER
+    let mainHeader = document.createElement("header")
+    mainHeader.setAttribute("class","main-header")
+    rootContainer.append(mainHeader)
+    
+    // CREATE WRAPPER DIV
+    let headerWrapperDiv = document.createElement("div")
+    headerWrapperDiv.setAttribute("class","wrapper headerWrapper")
+    mainHeader.append(headerWrapperDiv)
+
+    // RETRIEVE USER ARRAY FROM JSON AND DISPLAY THEM
+    retrieveUserArray()
+}
+
+// RETRIEVE USER ARRAY FROM JSON AND DISPLAY THEM
+function retrieveUserArray(){
+    fetch("http://localhost:3000/users")
+        .then(function (promise){
+            return promise.json()
+        })
+        .then(function (users){
+            displayAllUsers(users)
+        })
+}
+
+// DISPLAY ALL USERS
+function displayAllUsers(users){
+    for (user of users)
+        displayUser(user)
+}
+
+// DISPLAY USER
+function displayUser(user){
+
+    // CREATE A CHIP DIV
+    let chipDiv = document.createElement("div")
+    chipDiv.setAttribute("class","chip")
+    headerWrapperDiv = document.querySelector(".headerWrapper")
+    headerWrapperDiv.append(chipDiv)
+
+    // CREATE AN AVATAR DIV
+    let smallAvatarDiv = document.createElement("div")
+    smallAvatarDiv.setAttribute("class","avatar-small")
+    chipDiv.append(smallAvatarDiv)
+
+    // CREATE AN IMAGE TAG AND DISPLAY AVATAR
+    let smallAvatar = document.createElement("img")
+    smallAvatar.setAttribute("class","avatar-small")
+    smallAvatar.setAttribute("src",user.avatar)
+    smallAvatar.setAttribute("alt",user.username)
+    smallAvatarDiv.append(smallAvatar)
+
+    // SHOW USERNAME
+    usernameSpan = document.createElement("span")
+    usernameSpan.innerText = user.username
+    chipDiv.append(usernameSpan)
+}
+
+function displayMain(){
+    // FIND THE ROOT CONTAINER DIV
+    let rootContainer = document.querySelector("#root")
+
+    // CREATE MAIN SECTION
+    let mainSection = document.createElement("main")
+    mainSection.setAttribute("class","wrapper mainWrapper")
+    rootContainer.append(mainSection)
+     
+    // CREATE NEW POST SECTION
+    let newPostSection = document.createElement("section")
+    newPostSection.setAttribute("class","create-post-section")
+    mainSection.append(newPostSection)
+    createNewPost()
+    
+    // CREATE NEWS FEED SECTION
+    let newsFeedSection = document.createElement("section")
+    newsFeedSection.setAttribute("class","feed")
+    mainSection.append(newsFeedSection)
+    displayNewsFeed()
+}  
+
+function createNewPost(){
+}
+
+// RETRIEVE NEWS FEED FROM JSON ARRAY
+function displayNewsFeed(){
+    fetch("http://localhost:3000/comments")
+        .then(function (promise){
+            return promise.json()
+        })
+        .then(function (comments){
+            console.log(comments)
+            displayAllNews(comments)
+        })
+}
+
+// DISPLAY NEWS FEED
+function displayAllNews(news){
+    let newsFeedSection = document.querySelector(".feed")
+    let commentList = document.createElement("ul")
+    commentList.setAttribute("class","stack")
+    newsFeedSection.append(commentList)
+    for (const comments of news) 
+        displayNewsPost(comment)
+}
+
+// DISPLAY A NEWS POST ITEM
+function displayNewsPost(comment){
+    let commentList = document.querySelector(".stack")
+    let commentListItem = createElement("li")
+    commentListItem.setAttribute("class","post")
+    commentList.append(commentListItem)
+    
+    let chipDiv = document.createElement("div")
+    chipDiv.setAttribute("class","chip")
+    commentListItem.append(chipDiv)
+    
+    let smallAvatarDiv = document.createElement("div")
+    smallAvatarDiv.setAttribute("class","avatar-small")
+    chipDiv.append(smallAvatarDiv)
+
+    let image = document.createElement("img")
+    image.setAttribute("src","ddddd")
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// MAIN PRGRAM STARTS HERE
+
+displayMainPage()
+
+
+
+/*
+/////////////////////////////////////////////////////////////////////////////
+// SCRATCH PAD
+
+
+
+
+
+    let news = document.querySelector("#root")
+ 
+    // CREATE MAIN HEADER
+    let mainHeader = document.createElement("header")
+    mainHeader.setAttribute("class","main-header")
+    rootContainer.append(mainHeader)
+
+
+
+
+*/
