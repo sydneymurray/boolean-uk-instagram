@@ -1,4 +1,9 @@
 {
+  "currentuser": [
+    {
+      "id" : ""
+    }
+  ],
   "users": [
     {
       "id": 1,
