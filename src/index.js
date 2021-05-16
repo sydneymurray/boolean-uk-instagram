@@ -54,38 +54,20 @@ function displayTopBarHeader(){
     headerWrapperDiv.setAttribute("class","wrapper")
     mainHeader.append(headerWrapperDiv)
     
-    // DISPLAY ALL THE USERS IN THE HEADER 
-    displayAllUsers(headerWrapperDiv)
+    // DISPLAY ALL THE USER CHIPS IN THE HEADER 
+    displayAllUserChips(headerWrapperDiv)
 }
 
-// DISPLAY ALL USERS IN THE HEADER
-function displayAllUsers(wrapperDiv){
+// DISPLAY ALL USER CHIPS IN THE HEADER
+function displayAllUserChips(wrapperDiv){
     for (user of users){
-        let chipDiv = displayUser(user)
+        let chipDiv = displayUserChip(user)
         wrapperDiv.append(chipDiv)
-
-        // CREATE AN EVENT HANDLER FOR USER SELECTION
-        chipDiv.addEventListener("click", function(event){
-                                       
-            // Prevent Page Refresh on Button Click
-            event.preventDefault()
-        
-            // IS A CHIP ALREADY ACTIVE? THEN DEACTIVATE IT
-            activeChip = document.querySelector(".active")
-            if (activeChip !== null)
-                activeChip.classList.remove("active")
-            
-            // ACTIVATE CHIPDIV
-            chipDiv.classList.add("active")  
-            
-            // MAKE USER THE CURRENT USER
-            currentUser = user
-        })
     }
 }
 
 // DISPLAY USERS NAME AND AVATAR
-function displayUser(user){
+function displayUserChip(user){
 
     // CREATE A CHIP DIV
     let chipDiv = document.createElement("div")
@@ -108,6 +90,23 @@ function displayUser(user){
     usernameSpan.innerText = user.username
     chipDiv.append(usernameSpan)
     
+    // CREATE AN EVENT HANDLER FOR USER SELECTION
+    chipDiv.addEventListener("click", function(event){
+                                     
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+       
+        // IS A CHIP ALREADY ACTIVE? THEN DEACTIVATE IT
+        activeChip = document.querySelector(".active")
+        if (activeChip !== null)
+            activeChip.classList.remove("active")
+            
+        // ACTIVATE CHIPDIV
+        chipDiv.classList.add("active")  
+            
+        // MAKE USER THE CURRENT USER
+        currentUser = user
+    })
     return chipDiv
 }
 
@@ -263,7 +262,7 @@ function displayNewsPost(post){
     // LOCATE THE STACK DIV
     let postList = document.querySelector(".stack")
 
-    // CREATE A LIST IETM FOR THE CHIP
+    // CREATE A LIST ITEM FOR THE CHIP
     let postListItem = document.createElement("li")
     postListItem.setAttribute("class","post")
     postList.append(postListItem)
@@ -273,7 +272,7 @@ function displayNewsPost(post){
         return user.id === post.userId;})
     
     // DISPLAY USERS NAME AND AVATAR
-    let chipDiv = displayUser(user)
+    let chipDiv = displayUserChip(user)
     postListItem.append(chipDiv)
     
     // DISPLAY POSTING USERS IMAGE
@@ -289,7 +288,7 @@ function displayNewsPost(post){
     postListItem.append(postCommentsDiv)
 
     // DISPLAY A COMMENT FORM
-    newCommentForm = createCommentForm()
+    newCommentForm = createCommentForm(post)
     postCommentsDiv.append(newCommentForm)
 }
 
@@ -380,7 +379,7 @@ function displayPostComment(post, comment){
 }
 
 // DISPLAY A COMMENT FORM
-function createCommentForm(){
+function createCommentForm(post){
     let newCommentForm = document.createElement("form")
     newCommentForm.setAttribute("id","create-comment-form")
     newCommentForm.setAttribute("autocomplete","off")
@@ -396,6 +395,7 @@ function createCommentForm(){
     commentInput.setAttribute("id","comment")
     commentInput.setAttribute("name","comment")
     commentInput.setAttribute("type","text")
+    commentInput.setAttribute("required","true")
     newCommentForm.append(commentInput)
 
     // CREATE COMMENT SUBMIT BUTTON
@@ -404,9 +404,41 @@ function createCommentForm(){
     commentButton.innerText = "Comment"
     newCommentForm.append(commentButton)
 
-    return newCommentForm
+    // CREATE AN EVENT LISTENER FOR THE SUBMIT BUTTON
+    commentButton.addEventListener("click", function(event){
+
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+        
+        // SUBMIT COMMENT ONLY IF THE USER IS LOGGED IN
+        if (currentUser !== null)
+            submitNewComment(commentInput.value,post)
+        commentInput.value = ""; 
+        })
+
+        return newCommentForm
 }
 
+function submitNewComment(comment,post){
+
+    // FETCH THE USER COMMENTS ARRAY 
+    return fetch("http://localhost:3000/comments")
+    .then(function (promise){
+        return promise.json()})
+    .then(function (userCommentsArray){
+        
+        // SUBMIT THE COMMENT
+        fetch(`http://localhost:3000/comments`,{
+            method:'POST',
+            headers:{'Content-Type': 'Application/json'},
+            body: JSON.stringify({
+                content: comment,
+                userId: currentUser.id,
+                postId: post.id            
+        }) 
+    })
+    })
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // MAIN PROGRAM STARTS HERE
