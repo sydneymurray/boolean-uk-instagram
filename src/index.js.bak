@@ -4,28 +4,7 @@
 let users = []
 let posts = []
 let currentUser = null
-let parentWrapper = null
-
-
-/////////////////////////////////////////////////////////////////////////////
-// MAIN PROGRAM STARTS HERE
-
-// RETRIEVE USER ARRAY FROM JSON and store in users
-fetch("http://localhost:3000/users")
-    .then(function (promise){
-            return promise.json()
-        })
-        .then(function (retrievedArray){
-            users = retrievedArray 
-
-            // NOW RETRIEVE ALL POSTS FROM JSON AND STORE IN posts
-            displayAllUsers(users)       
-        })
-
-
-
-
-
+// let parentWrapper = null
 
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -34,13 +13,34 @@ fetch("http://localhost:3000/users")
 
 // DISPLAY THE MAIN PAGE
 function displayMainPage(){
-    displayHeader()
-    displayMain()
+
+    retrieveUserArray().then(function(){
+        displayTopBarHeader()})
+
+    retrievePostArray().then(function (){
+        displayMainSection()})
 }
 
+// RETRIEVE ALL USERS FROM JSON AND THEM STORE IN "users"
+function retrieveUserArray(){
+    return fetch("http://localhost:3000/users")
+        .then(function (promise){
+            return promise.json()})
+        .then(function (userArray){
+            users = userArray})
+}
 
+// RETRIEVE ALL POSTS AND STORE THENM IN 'posts'
+function retrievePostArray(){
+    return fetch("http://localhost:3000/posts")
+        .then(function (promise){
+            return promise.json()})
+        .then(function (postsArray){
+            posts = postsArray})
+}
 
-function displayHeader(){
+// DISLAY TOP HEADER BAR
+function displayTopBarHeader(){
     // FIND THE ROOT CONTAINER DIV
     let rootContainer = document.querySelector("#root")
  
@@ -51,42 +51,27 @@ function displayHeader(){
     
     // CREATE WRAPPER DIV
     let headerWrapperDiv = document.createElement("div")
-    headerWrapperDiv.setAttribute("class","wrapper headerWrapper")
+    headerWrapperDiv.setAttribute("class","wrapper")
     mainHeader.append(headerWrapperDiv)
-
-    // TELL DISPLAY WHERE ALL USERS FUNCTION HERE TO DISPLAY THEM
-    parentWrapper = headerWrapperDiv
     
-    // RETRIEVE USER ARRAY FROM JSON & DISPLAY THEM
-    retrieveUserArray()
+    // DISPLAY ALL THE USERS IN THE HEADER 
+    displayAllUsers(headerWrapperDiv)
 }
 
-// RETRIEVE USER ARRAY FROM JSON & DISPLAY THEM
-function retrieveUserArray(){
-    fetch("http://localhost:3000/users")
-        .then(function (promise){
-            return promise.json()
-        })
-        .then(function (retrievedArray){
-            users = retrievedArray 
-            displayAllUsers(users)       
-        })
+// DISPLAY ALL USERS IN THE HEADER
+function displayAllUsers(wrapperDiv){
+    for (user of users){
+        let chipDiv = displayUser(user,wrapperDiv)
+        wrapperDiv.append(chipDiv)
+    }
 }
 
-// DISPLAY ALL USERS IN HEADER
-function displayAllUsers(users){
-    for (user of users)
-        displayUser(user)
-}
-
-// DISPLAY USER
+// DISPLAY USERS NAME AND AVATAR
 function displayUser(user){
+ 
     // CREATE A CHIP DIV
     let chipDiv = document.createElement("div")
     chipDiv.setAttribute("class","chip")
-
-    // USE the parentWrapper VARIABLE TO KNOW WHERE TO DISPLAY THE USERS 
-    parentWrapper.append(chipDiv)
 
     // CREATE AN AVATAR DIV
     let smallAvatarDiv = document.createElement("div")
@@ -100,30 +85,32 @@ function displayUser(user){
     smallAvatar.setAttribute("alt",user.username)
     smallAvatarDiv.append(smallAvatar)
 
-    // SHOW USERNAME
+    // DISPLAY USERNAME
     let usernameSpan = document.createElement("span")
     usernameSpan.innerText = user.username
     chipDiv.append(usernameSpan)
+    
+    return chipDiv
 }
 
-function displayMain(){
+function displayMainSection(){
     // FIND THE ROOT CONTAINER DIV
     let rootContainer = document.querySelector("#root")
 
-    // CREATE MAIN SECTION
-    let mainSection = document.createElement("main")
-    mainSection.setAttribute("class","wrapper mainWrapper")
-    rootContainer.append(mainSection)
+    // CREATE MAIN WRAPPER
+    let mainWrapper = document.createElement("main")
+    mainWrapper.setAttribute("class","wrapper")
+    rootContainer.append(mainWrapper)
      
-    // CREATE A NEW POST SECTION
-    displayCreateNewPost()
+    // DISPLAY THE CREATE A NEW POST SECTION
+    displayCreateNewPostSection()
     
     // CREATE & DISPLAY NEWS FEED SECTION
-    displayNewsFeed()
+    displayAllPosts()
 }  
 
-// CREATE A NEW POST SECTION
-function displayCreateNewPost(){
+// DISPLAY THE CREATE A NEW POST SECTION
+function displayCreateNewPostSection(){
     let mainSection = document.querySelector("main")
     let createNewPostSection = document.createElement("section")
     createNewPostSection.setAttribute("class","create-post-section")
@@ -198,35 +185,24 @@ function displayCreateNewPost(){
     newPostFormDiv.append(submitButton)
 }
 
-// RETRIEVE NEWS FEED FROM JSON ARRAY AND DISPLAY THEM
-function displayNewsFeed(){
-    fetch("http://localhost:3000/posts")
-        .then(function (promise){
-            return promise.json()
-        })
-        .then(function (postsArray){
-            displayAllPosts(postsArray)
-        })
-}
-
-
 // DISPLAY NEWS FEED
-function displayAllPosts(postsArray){
-    // LOCATE MAIN SECTION
-    let mainSection = document.querySelector("main")
+function displayAllPosts(){
+
+    // LOCATE THE MAIN WRAPPER
+    let mainWrapper = document.querySelector("main")
 
     // CREATE FEED SECTION
     let newsFeedSection = document.createElement("section")
     newsFeedSection.setAttribute("class","feed")
-    mainSection.append(newsFeedSection)
+    mainWrapper.append(newsFeedSection)
 
-    // CREATE UNORDERED LIST ELEMENT FOR COMMENTS
-    let postList = document.createElement("ul")
-    postList.setAttribute("class","stack")
-    newsFeedSection.append(postList)
+    // CREATE UNORDERED LIST ELEMENT FOR POSTS
+    let postListStack = document.createElement("ul")
+    postListStack.setAttribute("class","stack")
+    newsFeedSection.append(postListStack)
 
     // DISPLAY EACH POST AS A LIST ITEM
-    for (const post of postsArray) 
+    for (const post of posts) 
         displayNewsPost(post)
 
 }
@@ -236,23 +212,40 @@ function displayNewsPost(post){
     // LOCATE THE STACK DIV
     let postList = document.querySelector(".stack")
 
-    // CREATE A LIST ITME FOR THE CHIP
+    // CREATE A LIST IETM FOR THE CHIP
     let postListItem = document.createElement("li")
     postListItem.setAttribute("class","post")
     postList.append(postListItem)
     
-    // FIND USERID FROM POST
+    // FIND THE POSTING USER
     let user = users.find(function (user) {
         return user.id === post.userId;})
     
-    // TELL DISPLAY USER WHERE TO DISPLAY THE CHIP
-    parentWrapper = postListItem
-    displayUser(user)
+    // DISPLAY USERS NAME AND AVATAR
+    let chipDiv = displayUser(user)
+    postListItem.append(chipDiv)
     
-    // CREATE A DIV CONTAINER FOR POST IMAGE
+    // DISPLAY POSTING USERS IMAGE
+    let postImageDiv = postingUserImage(post)
+    postListItem.append(postImageDiv)
+
+    // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
+    let postContentDiv = displayPostContent(post)
+    postListItem.append(postContentDiv)
+    
+    // CREATE A DIV CONTAINER TO DISPLAY POST COMMENTS
+    let postCommentsDiv = displayPostComments(post)
+    postListItem.append(postCommentsDiv)
+
+    // DISPLAY A COMMENT FORM
+    newCommentForm = createCommentForm()
+    postCommentsDiv.append(newCommentForm)
+}
+
+ // DISPLAY POSTING USERS IMAGE
+ function postingUserImage(post){
     let postImageDiv = document.createElement("div")
     postImageDiv.setAttribute("class","post--image")
-    postListItem.append(postImageDiv)
 
     // DISPLAY POST IMAGE
     let postImage = document.createElement("img")
@@ -261,70 +254,85 @@ function displayNewsPost(post){
     postImage.setAttribute("width","320px")
     postImageDiv.append(postImage)
 
-    // CREATE CONTAINER DIV FOR CONTENT
-    let postContentDiv = document.createElement("div")
-    postContentDiv.setAttribute("class","post--content")
-    postListItem.append(postContentDiv)
+    return postImageDiv
+ }
 
-    // DISPLAY POST HEADING 
-    let postTitle = document.createElement("h2")
-    postTitle.innerText = post.title
-    postContentDiv.append(postTitle)
-    
-    // DISPLAY POST CONTENT
-    let postContent = document.createElement("p")
-    postContent.innerText = post.content
-    postContentDiv.append(postContent)
+ // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
+ function displayPostContent(post){
+     let postContentDiv = document.createElement("div")
+     postContentDiv.setAttribute("class","post--content")
 
-    // CREATE POST COMMENTS CONTAINER 
+     // DISPLAY POST HEADING 
+     let postTitle = document.createElement("h2")
+     postTitle.innerText = post.title
+     postContentDiv.append(postTitle)
+ 
+     // DISPLAY POST CONTENT
+     let postContent = document.createElement("p")
+     postContent.innerText = post.content
+     postContentDiv.append(postContent)
+     
+     return postContentDiv
+ }
+
+// CREATE A DIV CONTAINER TO DISPLAY POST COMMENTS
+function displayPostComments(post){
+   
+    // CREATE A POST COMMENTS CONTAINER 
     let postCommentsDiv = document.createElement("div")
-    postCommentsDiv.setAttribute("class","post--comments")
-    postListItem.append(postCommentsDiv)   
-    
+    postCommentsDiv.setAttribute("class","post--comments")  
+   
     // CREATE COMMENTS HEADING
     let postCommentsH3 = document.createElement("h3")
     postCommentsH3.innerText = "Comments"
-    postCommentsDiv.append(postCommentsH3)      
-
-    // DISPLAY USER COMMENTS 
+    postCommentsDiv.append(postCommentsH3)  
+    
+    // FIND AND DISPLAY EACH POST COMMENT
     let commentUser = null
     for (const comment of post.comments) {
-        if(user.id === post.userId){
+      postCommentDiv = displayPostComment(post, comment)
+      postCommentsDiv.append(postCommentDiv)}
 
-            // CREATE A POST COMMENT DIV CONTAINER
-            let postCommentDiv = document.createElement("div")
-            postCommentDiv.setAttribute("class","post--comment")
-            postCommentsDiv.append(postCommentDiv)  
-            
-            // CREATE AVATAR DIV CONATAINER
-            let commentAvatarDiv = document.createElement("div")
-            commentAvatarDiv.setAttribute("class","avatar-small")
-            postCommentDiv.append(commentAvatarDiv)  
+    return postCommentsDiv 
+}
 
-            // LOCATE THE POSTER 
-            for (commenter of users)
-                if (commenter.id === comment.userId)
-                      commentUser = commenter
-            
-            // DISPLAY POSTERS AVATAR
-            let postCommentImage = document.createElement("img")
-            postCommentImage.setAttribute("src",commentUser.avatar)
-            postCommentImage.setAttribute("alt",commentUser.username)            
-            postCommentImage.setAttribute("class","avatar-small")
-            commentAvatarDiv.append(postCommentImage)
-            
-            // DISPLAY THE COMMENT
-            let postComment = document.createElement("p")
-            postComment.innerText = comment.content
-            postCommentDiv.append(postComment)
-        }
-    }
+// DISPLAY USER COMMENTS 
+function displayPostComment(post, comment){
 
-    //CREATE A COMMENT FORM
+    // CREATE A POST COMMENT DIV CONTAINER
+    let postCommentDiv = document.createElement("div")
+    postCommentDiv.setAttribute("class","post--comment")
+       
+    // CREATE AVATAR DIV CONATAINER
+    let commentAvatarDiv = document.createElement("div")
+    commentAvatarDiv.setAttribute("class","avatar-small")
+    postCommentDiv.append(commentAvatarDiv)  
+
+    // LOCATE THE POSTER 
+    for (commenter of users)
+        if (commenter.id === comment.userId)
+            commentUser = commenter
+           
+    // DISPLAY POSTERS AVATAR
+    let postCommentImage = document.createElement("img")
+    postCommentImage.setAttribute("src",commentUser.avatar)
+    postCommentImage.setAttribute("alt",commentUser.username)            
+    postCommentImage.setAttribute("class","avatar-small")
+    commentAvatarDiv.append(postCommentImage)
+      
+    // DISPLAY THE COMMENT
+    let postComment = document.createElement("p")
+    postComment.innerText = comment.content
+    postCommentDiv.append(postComment)
+
+    return postCommentDiv
+}
+
+// DISPLAY A COMMENT FORM
+function createCommentForm(){
     let newCommentForm = document.createElement("form")
     newCommentForm.setAttribute("id","create-comment-form")
     newCommentForm.setAttribute("autocomplete","off")
-    postCommentsDiv.append(newCommentForm)
 
     // CREATE COMMENT LABEL
     let commentLabel = document.createElement("label")
@@ -344,14 +352,15 @@ function displayNewsPost(post){
     commentButton.setAttribute("type","submit")
     commentButton.innerText = "Comment"
     newCommentForm.append(commentButton)
+
+    return newCommentForm
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
-// MAIN PRGRAM STARTS HERE
+// MAIN PROGRAM STARTS HERE
 
 displayMainPage()
-
 
 
 

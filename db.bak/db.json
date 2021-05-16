@@ -49,50 +49,6 @@
       },
       "likes": 0,
       "userId": 2
-    },
-    {
-      "id": 4,
-      "title": "Earthrise",
-      "content": "FANTASTIC",
-      "image": {
-        "src": "http://1.bp.blogspot.com/-_-UbINYgejY/T5Rhz8SVfAI/AAAAAAAAB4w/SPgESa6UCdw/s1600/earthrise.jpg",
-        "alt": "Earthrise"
-      },
-      "likes": 0,
-      "userId": 3
-    },
-    {
-      "id": 5,
-      "title": "Chevvy",
-      "content": "OOOOOOOHHHHH",
-      "image": {
-        "src": "https://mondrian.mashable.com/2016%252F03%252F02%252Fe5%252FGrandSporta.45778.png%252F950x534__filters%253Aquality%252880%2529.png?signature=qodFympdbeTfsPHSq9cCAUwEs4I=",
-        "alt": "Chevvy"
-      },
-      "likes": 0,
-      "userId": 3
-    },
-    {
-      "id": 6,
-      "title": "The Shadows",
-      "content": "Z'Hadum",
-      "image": {
-        "src": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/e156965f-4e2e-48b1-af0c-ebb84e505117/d9pnme2-1edcbd10-4b18-4960-ad64-b7beed2fa106.png/v1/fill/w_1024,h_576,q_80,strp/shadow_vessel__top__by_drkosh_d9pnme2-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NTc2IiwicGF0aCI6IlwvZlwvZTE1Njk2NWYtNGUyZS00OGIxLWFmMGMtZWJiODRlNTA1MTE3XC9kOXBubWUyLTFlZGNiZDEwLTRiMTgtNDk2MC1hZDY0LWI3YmVlZDJmYTEwNi5wbmciLCJ3aWR0aCI6Ijw9MTAyNCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.UGv4d9-V4RIyIIGYoVLA5B5oSHNsRBQ9U4v63bN3Vy4",
-        "alt": "The Shadows"
-      },
-      "likes": 0,
-      "userId": 3
-    },
-    {
-      "id": 7,
-      "title": "The Heptones",
-      "content": "Sweet Sweet ROCKSTEADY Music!!!",
-      "image": {
-        "src": "https://m.media-amazon.com/images/I/81UjIVoIptL._SS500_.jpg",
-        "alt": "The Heptones"
-      },
-      "likes": 0,
-      "userId": 3
     }
   ],
   "comments": [

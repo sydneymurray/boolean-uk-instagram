@@ -61,14 +61,32 @@ function displayTopBarHeader(){
 // DISPLAY ALL USERS IN THE HEADER
 function displayAllUsers(wrapperDiv){
     for (user of users){
-        let chipDiv = displayUser(user,wrapperDiv)
+        let chipDiv = displayUser(user)
         wrapperDiv.append(chipDiv)
+
+        // CREATE AN EVENT HANDLER FOR USER SELECTION
+        chipDiv.addEventListener("click", function(event){
+                                       
+            // Prevent Page Refresh on Button Click
+            event.preventDefault()
+        
+            // IS A CHIP ALREADY ACTIVE? THEN DEACTIVATE IT
+            activeChip = document.querySelector(".active")
+            if (activeChip !== null)
+                activeChip.classList.remove("active")
+            
+            // ACTIVATE CHIPDIV
+            chipDiv.classList.add("active")  
+            
+            // MAKE USER THE CURRENT USER
+            currentUser = user
+        })
     }
 }
 
 // DISPLAY USERS NAME AND AVATAR
 function displayUser(user){
- 
+
     // CREATE A CHIP DIV
     let chipDiv = document.createElement("div")
     chipDiv.setAttribute("class","chip")
@@ -137,6 +155,7 @@ function displayCreateNewPostSection(){
     imageInput.setAttribute("id","image")
     imageInput.setAttribute("name","image")
     imageInput.setAttribute("type","text")
+    imageInput.setAttribute("required","true")
     newPostForm.append(imageInput)
 
     // CREATE TITLE LABEL
@@ -150,6 +169,7 @@ function displayCreateNewPostSection(){
     titleInput.setAttribute("id","title")
     titleInput.setAttribute("name","title")
     titleInput.setAttribute("type","text")
+    titleInput.setAttribute("required","true")
     newPostForm.append(titleInput)
  
     // CREATE CONTENT LABEL 
@@ -164,6 +184,7 @@ function displayCreateNewPostSection(){
     contentTextArea.setAttribute("name","content")
     contentTextArea.setAttribute("rows","2")
     contentTextArea.setAttribute("coloumns","30")
+    contentTextArea.setAttribute("required","true")
     newPostForm.append(contentTextArea)
   
     // CREATE A DIV FOR ACTION BUTTONS
@@ -183,7 +204,38 @@ function displayCreateNewPostSection(){
     submitButton.setAttribute("type","submit")
     submitButton.innerText = "Submit"
     newPostFormDiv.append(submitButton)
+
+    // CREATE AN EVENT LISTENER TO SUBMIT THE NEW POST
+    submitButton.addEventListener("click", function(event){
+
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+
+        if (currentUser !== null)
+            submitNewPost(imageInput.value,titleInput.value,contentTextArea.value,currentUser)
+        newPostForm.reset();
+        currentUser = user 
+    })
 }
+
+// STORE A NEW POST
+function submitNewPost(image,title,comment,user){
+    fetch(`http://localhost:3000/posts`,{
+        method:'POST',
+        headers:{'Content-Type': 'Application/json'},
+        body: JSON.stringify({
+            id: posts.length+1,
+            title: title,
+            content: comment,
+            image: {
+                src: image,
+                alt: title},
+            likes: 0,
+            userId: user.id
+        })
+    }).then(displayMainPage()) 
+}
+
 
 // DISPLAY NEWS FEED
 function displayAllPosts(){
@@ -204,7 +256,6 @@ function displayAllPosts(){
     // DISPLAY EACH POST AS A LIST ITEM
     for (const post of posts) 
         displayNewsPost(post)
-
 }
 
 // DISPLAY A POST ITEM
