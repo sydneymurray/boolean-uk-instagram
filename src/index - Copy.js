@@ -54,21 +54,21 @@ function displayTopBarHeader(){
     headerWrapperDiv.setAttribute("class","wrapper")
     mainHeader.append(headerWrapperDiv)
     
-    // DISPLAY ALL THE USERS IN THE HEADER 
-    displayAllUsers(headerWrapperDiv)
+    // DISPLAY ALL THE USER CHIPS IN THE HEADER 
+    displayAllUserChips(headerWrapperDiv)
 }
 
-// DISPLAY ALL USERS IN THE HEADER
-function displayAllUsers(wrapperDiv){
+// DISPLAY ALL USER CHIPS IN THE HEADER
+function displayAllUserChips(wrapperDiv){
     for (user of users){
-        let chipDiv = displayUser(user,wrapperDiv)
+        let chipDiv = displayUserChip(user)
         wrapperDiv.append(chipDiv)
     }
 }
 
 // DISPLAY USERS NAME AND AVATAR
-function displayUser(user){
- 
+function displayUserChip(user){
+
     // CREATE A CHIP DIV
     let chipDiv = document.createElement("div")
     chipDiv.setAttribute("class","chip")
@@ -89,7 +89,25 @@ function displayUser(user){
     let usernameSpan = document.createElement("span")
     usernameSpan.innerText = user.username
     chipDiv.append(usernameSpan)
+
     
+    // CREATE AN EVENT HANDLER FOR USER SELECTION
+    chipDiv.addEventListener("click", function(event){
+                                     
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+       
+        // IS A CHIP ALREADY ACTIVE? THEN DEACTIVATE IT
+        activeChip = document.querySelector(".active")
+        if (activeChip !== null)
+            activeChip.classList.remove("active")
+            
+        // ACTIVATE CHIPDIV
+        chipDiv.classList.add("active")  
+            
+        // MAKE USER THE CURRENT USER
+        currentUser = user
+    })
     return chipDiv
 }
 
@@ -137,6 +155,7 @@ function displayCreateNewPostSection(){
     imageInput.setAttribute("id","image")
     imageInput.setAttribute("name","image")
     imageInput.setAttribute("type","text")
+    imageInput.setAttribute("required","true")
     newPostForm.append(imageInput)
 
     // CREATE TITLE LABEL
@@ -150,6 +169,7 @@ function displayCreateNewPostSection(){
     titleInput.setAttribute("id","title")
     titleInput.setAttribute("name","title")
     titleInput.setAttribute("type","text")
+    titleInput.setAttribute("required","true")
     newPostForm.append(titleInput)
  
     // CREATE CONTENT LABEL 
@@ -164,6 +184,7 @@ function displayCreateNewPostSection(){
     contentTextArea.setAttribute("name","content")
     contentTextArea.setAttribute("rows","2")
     contentTextArea.setAttribute("coloumns","30")
+    contentTextArea.setAttribute("required","true")
     newPostForm.append(contentTextArea)
   
     // CREATE A DIV FOR ACTION BUTTONS
@@ -183,7 +204,38 @@ function displayCreateNewPostSection(){
     submitButton.setAttribute("type","submit")
     submitButton.innerText = "Submit"
     newPostFormDiv.append(submitButton)
+
+    // CREATE AN EVENT LISTENER TO SUBMIT THE NEW POST
+    submitButton.addEventListener("click", function(event){
+
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+
+        if (currentUser !== null)
+            submitNewPost(imageInput.value,titleInput.value,contentTextArea.value,currentUser)
+        newPostForm.reset();
+        currentUser = user 
+    })
 }
+
+// STORE A NEW POST
+function submitNewPost(image,title,comment,user){
+    fetch(`http://localhost:3000/posts`,{
+        method:'POST',
+        headers:{'Content-Type': 'Application/json'},
+        body: JSON.stringify({
+            id: posts.length+1,
+            title: title,
+            content: comment,
+            image: {
+                src: image,
+                alt: title},
+            likes: 0,
+            userId: user.id
+        })
+    }).then(displayMainPage()) 
+}
+
 
 // DISPLAY NEWS FEED
 function displayAllPosts(){
@@ -204,7 +256,6 @@ function displayAllPosts(){
     // DISPLAY EACH POST AS A LIST ITEM
     for (const post of posts) 
         displayNewsPost(post)
-
 }
 
 // DISPLAY A POST ITEM
@@ -212,7 +263,7 @@ function displayNewsPost(post){
     // LOCATE THE STACK DIV
     let postList = document.querySelector(".stack")
 
-    // CREATE A LIST IETM FOR THE CHIP
+    // CREATE A LIST ITEM FOR THE CHIP
     let postListItem = document.createElement("li")
     postListItem.setAttribute("class","post")
     postList.append(postListItem)
@@ -222,12 +273,46 @@ function displayNewsPost(post){
         return user.id === post.userId;})
     
     // DISPLAY USERS NAME AND AVATAR
-    let chipDiv = displayUser(user)
+    let chipDiv = displayUserChip(user)
     postListItem.append(chipDiv)
     
     // DISPLAY POSTING USERS IMAGE
     let postImageDiv = postingUserImage(post)
     postListItem.append(postImageDiv)
+
+    // DISPLAY LIKES TEXT
+    let likesText = document.createElement("span")
+    likesText.innerText = `${post.likes} Likes`
+    postListItem.append(likesText)
+    
+    // DISPLAY LIKES HART
+    let likesHart = document.createElement("span")
+    likesHart.innerText = `♥`
+    likesHart.setAttribute("class","hart")
+    postListItem.append(likesHart)
+     
+    // CREATE A LIKES LISTENER
+    likesHart.addEventListener("click", function(event){                          
+        
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+
+        // INCREASE THE LIKES
+        post.likes++ 
+
+        // UPDATE THE LIKES INNER TEXT
+        likesText.innerText = `${post.likes} Likes`
+        console.log(post)
+
+        fetch(`http://localhost:3000/posts/${post.id}`,{
+            method:'PATCH',
+            headers:{'Content-Type': 'Application/json'},
+            body: JSON.stringify({
+                likes: post.likes
+            }) 
+        }) 
+        event.preventDefault()
+    })
 
     // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
     let postContentDiv = displayPostContent(post)
@@ -238,12 +323,12 @@ function displayNewsPost(post){
     postListItem.append(postCommentsDiv)
 
     // DISPLAY A COMMENT FORM
-    newCommentForm = createCommentForm()
+    newCommentForm = createCommentForm(post)
     postCommentsDiv.append(newCommentForm)
 }
 
- // DISPLAY POSTING USERS IMAGE
- function postingUserImage(post){
+// DISPLAY POSTING USERS IMAGE
+function postingUserImage(post){
     let postImageDiv = document.createElement("div")
     postImageDiv.setAttribute("class","post--image")
 
@@ -255,10 +340,10 @@ function displayNewsPost(post){
     postImageDiv.append(postImage)
 
     return postImageDiv
- }
+}
 
- // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
- function displayPostContent(post){
+// CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
+function displayPostContent(post){
      let postContentDiv = document.createElement("div")
      postContentDiv.setAttribute("class","post--content")
 
@@ -273,7 +358,7 @@ function displayNewsPost(post){
      postContentDiv.append(postContent)
      
      return postContentDiv
- }
+}
 
 // CREATE A DIV CONTAINER TO DISPLAY POST COMMENTS
 function displayPostComments(post){
@@ -290,15 +375,15 @@ function displayPostComments(post){
     // FIND AND DISPLAY EACH POST COMMENT
     let commentUser = null
     for (const comment of post.comments) {
-      postCommentDiv = displayPostComment(post, comment)
+      postCommentDiv = displayPostComment(comment)
       postCommentsDiv.append(postCommentDiv)}
 
     return postCommentsDiv 
 }
 
 // DISPLAY USER COMMENTS 
-function displayPostComment(post, comment){
-
+function displayPostComment(comment){
+    console.log(comment)
     // CREATE A POST COMMENT DIV CONTAINER
     let postCommentDiv = document.createElement("div")
     postCommentDiv.setAttribute("class","post--comment")
@@ -329,7 +414,7 @@ function displayPostComment(post, comment){
 }
 
 // DISPLAY A COMMENT FORM
-function createCommentForm(){
+function createCommentForm(post){
     let newCommentForm = document.createElement("form")
     newCommentForm.setAttribute("id","create-comment-form")
     newCommentForm.setAttribute("autocomplete","off")
@@ -345,6 +430,7 @@ function createCommentForm(){
     commentInput.setAttribute("id","comment")
     commentInput.setAttribute("name","comment")
     commentInput.setAttribute("type","text")
+    commentInput.setAttribute("required","true")
     newCommentForm.append(commentInput)
 
     // CREATE COMMENT SUBMIT BUTTON
@@ -353,7 +439,33 @@ function createCommentForm(){
     commentButton.innerText = "Comment"
     newCommentForm.append(commentButton)
 
-    return newCommentForm
+    // CREATE AN EVENT LISTENER FOR THE SUBMIT BUTTON
+    commentButton.addEventListener("click", function(event){
+
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+        
+        // SUBMIT COMMENT ONLY IF THE USER IS LOGGED IN
+        if (currentUser !== null)
+            submitNewComment(commentInput.value,post)
+        //displayPostComment(commentInput.value)
+        commentInput.value = ""; 
+        })
+
+        return newCommentForm
+}
+
+// SUBMIT THE COMMENT
+function submitNewComment(comment,post){
+    fetch(`http://localhost:3000/comments`,{
+        method:'POST',
+        headers:{'Content-Type': 'Application/json'},
+        body: JSON.stringify({
+            content: comment,
+            userId: currentUser.id,
+            postId: post.id            
+        }) 
+    })
 }
 
 

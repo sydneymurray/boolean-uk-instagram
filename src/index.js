@@ -89,6 +89,7 @@ function displayUserChip(user){
     let usernameSpan = document.createElement("span")
     usernameSpan.innerText = user.username
     chipDiv.append(usernameSpan)
+
     
     // CREATE AN EVENT HANDLER FOR USER SELECTION
     chipDiv.addEventListener("click", function(event){
@@ -279,6 +280,40 @@ function displayNewsPost(post){
     let postImageDiv = postingUserImage(post)
     postListItem.append(postImageDiv)
 
+    // DISPLAY LIKES TEXT
+    let likesText = document.createElement("span")
+    likesText.innerText = `${post.likes} Likes`
+    postListItem.append(likesText)
+    
+    // DISPLAY LIKES HART
+    let likesHart = document.createElement("span")
+    likesHart.innerText = `♥`
+    likesHart.setAttribute("class","hart")
+    postListItem.append(likesHart)
+     
+    // CREATE A LIKES LISTENER
+    likesHart.addEventListener("click", function(event){                          
+        
+        // Prevent Page Refresh on Button Click
+        event.preventDefault()
+
+        // INCREASE THE LIKES
+        post.likes++ 
+
+        // UPDATE THE LIKES INNER TEXT
+        likesText.innerText = `${post.likes} Likes`
+        console.log(post)
+
+        fetch(`http://localhost:3000/posts/${post.id}`,{
+            method:'PATCH',
+            headers:{'Content-Type': 'Application/json'},
+            body: JSON.stringify({
+                likes: post.likes
+            }) 
+        }) 
+        event.preventDefault()
+    })
+
     // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
     let postContentDiv = displayPostContent(post)
     postListItem.append(postContentDiv)
@@ -288,12 +323,12 @@ function displayNewsPost(post){
     postListItem.append(postCommentsDiv)
 
     // DISPLAY A COMMENT FORM
-    newCommentForm = createCommentForm(post)
+    newCommentForm = createCommentForm(post,postCommentsDiv)
     postCommentsDiv.append(newCommentForm)
 }
 
- // DISPLAY POSTING USERS IMAGE
- function postingUserImage(post){
+// DISPLAY POSTING USERS IMAGE
+function postingUserImage(post){
     let postImageDiv = document.createElement("div")
     postImageDiv.setAttribute("class","post--image")
 
@@ -305,10 +340,10 @@ function displayNewsPost(post){
     postImageDiv.append(postImage)
 
     return postImageDiv
- }
+}
 
- // CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
- function displayPostContent(post){
+// CREATE A DIV CONTAINER TO DISPLAY POST CONTENT
+function displayPostContent(post){
      let postContentDiv = document.createElement("div")
      postContentDiv.setAttribute("class","post--content")
 
@@ -323,7 +358,7 @@ function displayNewsPost(post){
      postContentDiv.append(postContent)
      
      return postContentDiv
- }
+}
 
 // CREATE A DIV CONTAINER TO DISPLAY POST COMMENTS
 function displayPostComments(post){
@@ -338,16 +373,15 @@ function displayPostComments(post){
     postCommentsDiv.append(postCommentsH3)  
     
     // FIND AND DISPLAY EACH POST COMMENT
-    let commentUser = null
     for (const comment of post.comments) {
-      postCommentDiv = displayPostComment(post, comment)
+      postCommentDiv = displayPostComment(comment)
       postCommentsDiv.append(postCommentDiv)}
 
     return postCommentsDiv 
 }
 
 // DISPLAY USER COMMENTS 
-function displayPostComment(post, comment){
+function displayPostComment(comment){
 
     // CREATE A POST COMMENT DIV CONTAINER
     let postCommentDiv = document.createElement("div")
@@ -379,7 +413,7 @@ function displayPostComment(post, comment){
 }
 
 // DISPLAY A COMMENT FORM
-function createCommentForm(post){
+function createCommentForm(post,postCommentsDiv){
     let newCommentForm = document.createElement("form")
     newCommentForm.setAttribute("id","create-comment-form")
     newCommentForm.setAttribute("autocomplete","off")
@@ -411,34 +445,78 @@ function createCommentForm(post){
         event.preventDefault()
         
         // SUBMIT COMMENT ONLY IF THE USER IS LOGGED IN
-        if (currentUser !== null)
-            submitNewComment(commentInput.value,post)
-        commentInput.value = ""; 
-        })
+        if (currentUser !== null){
+            
+            //FIND THE COMMENT FORM
+            let commentForm = document.querySelector("#create-comment-form")
+            
+            // REMOVE THE COMMENT FORM
+            commentForm.remove()
 
-        return newCommentForm
+            // ADD THE NEW COMMENT
+            newComment = updatePostComment(commentInput.value)
+            postCommentsDiv.append(newComment)
+            
+            // RESTORE COMMENT FORM
+            postCommentsDiv.append(commentForm)
+
+            // UPDATE JSON WITH NEW COMMENT
+            submitNewComment(commentInput.value,post)
+            
+            // CLEAR COMMENT BOX
+            commentInput.value = "";
+        } 
+        else 
+            alert("You must Log In before you can add comments")
+    })
+    return newCommentForm
 }
 
-function submitNewComment(comment,post){
+function updatePostComment(commentInput){
 
-    // FETCH THE USER COMMENTS ARRAY 
-    return fetch("http://localhost:3000/comments")
-    .then(function (promise){
-        return promise.json()})
-    .then(function (userCommentsArray){
-        
-        // SUBMIT THE COMMENT
-        fetch(`http://localhost:3000/comments`,{
-            method:'POST',
-            headers:{'Content-Type': 'Application/json'},
-            body: JSON.stringify({
-                content: comment,
-                userId: currentUser.id,
-                postId: post.id            
+    // CREATE A POST COMMENT DIV CONTAINER
+    let postCommentDiv = document.createElement("div")
+    postCommentDiv.setAttribute("class","post--comment")
+       
+    // CREATE AVATAR DIV CONATAINER
+    let commentAvatarDiv = document.createElement("div")
+    commentAvatarDiv.setAttribute("class","avatar-small")
+    postCommentDiv.append(commentAvatarDiv)  
+
+    // LOCATE THE POSTER 
+    for (commenter of users)
+        if (commenter.id === currentUser.userId)
+            commentUser = commenter
+           
+    // DISPLAY POSTERS AVATAR
+    let postCommentImage = document.createElement("img")
+    postCommentImage.setAttribute("src",commentUser.avatar)
+    postCommentImage.setAttribute("alt",commentUser.username)            
+    postCommentImage.setAttribute("class","avatar-small")
+    commentAvatarDiv.append(postCommentImage)
+      
+    // DISPLAY THE COMMENT
+    let postComment = document.createElement("p")
+    postComment.innerText = commentInput
+    postCommentDiv.append(postComment)
+
+    return postCommentDiv  
+}
+
+
+// SUBMIT THE COMMENT
+function submitNewComment(comment,post){
+    fetch(`http://localhost:3000/comments`,{
+        method:'POST',
+        headers:{'Content-Type': 'Application/json'},
+        body: JSON.stringify({
+            content: comment,
+            userId: currentUser.id,
+            postId: post.id            
         }) 
     })
-    })
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // MAIN PROGRAM STARTS HERE
